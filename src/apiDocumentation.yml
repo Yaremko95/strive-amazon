@@ -1,0 +1,154 @@
+openapi: 3.0.1
+info:
+  title: Strive Amazon
+  version: 1.0.0
+servers:
+  - url: http://localhost:3002
+    description: Local server
+tags:
+  - name: products
+    description: CRUD operation with products
+paths:
+  /products:
+    get:
+      tags:
+        - products
+      summary: Returns a list of products.
+
+      responses:
+        "200": # status code
+          description: A list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags:
+        - products
+      description: Adds a new product
+      requestBody:
+        description:  object
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+      responses:
+        "201": # status code
+          description: The ID of the newly created Product
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /products/{id}:
+    get:
+      tags:
+        - products
+      description: Retrieves a single product
+      parameters:
+        - in: path
+          name: _id
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "200": # status code
+          description: single product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags:
+        - products
+      description: Updates an existing product
+      summary: Update
+      parameters:
+        - in: path
+          name: _id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Fields to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+      responses:
+        "200": # status code
+          description: A list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags:
+        - products
+      description: Delete a specific product by ID
+      parameters:
+        - in: path
+          name: _id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200": # status code
+          description: The single Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  responses:
+    NotFound:
+      description: The specific resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Bearer token missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        brand:
+          type: number
+        imageURL:
+          type: string
+        price:
+          type: string
+        category:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string

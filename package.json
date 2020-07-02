@@ -19,9 +19,11 @@
     "express-validator": "^6.6.0",
     "fs-extra": "^9.0.1",
     "nodemon": "^2.0.4",
+    "swagger-ui-express": "^4.1.4",
     "uniqid": "^5.2.0",
     "xml-js": "^1.6.11",
-    "xmlbuilder": "^15.1.1"
+    "xmlbuilder": "^15.1.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "prettier": "2.0.5"
