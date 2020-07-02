@@ -1,35 +1,37 @@
-const fs = require("fs-extra");
+const fsExtra = require("fs-extra");
+const fs = require("fs");
 const pdfMakePrinter = require("pdfmake/src/printer");
 const uniqid = require("uniqid");
 const { begin } = require("xmlbuilder");
-const { createCanvas, loadImage } = require("canvas");
+const PDFDocument = require("pdfkit");
+const { join } = require("path");
 
 const readJSON = async (path) => {
-  let json = await fs.readJson(path);
+  let json = await fsExtra.readJson(path);
   return json;
 };
 
 const writeJSON = async (path, data) => {
-  let jsonArray = await fs.readJson(path);
+  let jsonArray = await fsExtra.readJson(path);
   jsonArray = [...jsonArray, { ...data, _id: uniqid(), createdAt: new Date() }];
-  let write = await fs.writeJson(path, jsonArray);
+  let write = await fsExtra.writeJson(path, jsonArray);
   return jsonArray;
 };
 
 const updateData = async (path, id, data) => {
-  let json = await fs.readJson(path);
+  let json = await fsExtra.readJson(path);
 
   const updatedData = json.map(
     (item) => (item._id === id && { ...data, _id: id }) || item
   );
 
-  let write = await fs.writeJson(path, updatedData);
+  let write = await fsExtra.writeJson(path, updatedData);
   return updatedData;
 };
 const removeData = async (path, key, value) => {
-  let json = await fs.readJson(path);
+  let json = await fsExtra.readJson(path);
   const filtered = json.filter((item) => item[key] !== value);
-  const write = fs.writeJson(path, filtered);
+  const write = fsExtra.writeJson(path, filtered);
   return filtered;
 };
 
@@ -51,48 +53,27 @@ const buildXML = (value1, value2) => {
   return xml;
 };
 
-const generatePdf = async (content) => {
-  const fonts = {
-    Courier: {
-      normal: "Courier",
-      bold: "Courier-Bold",
-      italics: "Courier-Oblique",
-      bolditalics: "Courier-BoldOblique",
-    },
-    Helvetica: {
-      normal: "Helvetica",
-      bold: "Helvetica-Bold",
-      italics: "Helvetica-Oblique",
-      bolditalics: "Helvetica-BoldOblique",
-    },
-    Times: {
-      normal: "Times-Roman",
-      bold: "Times-Bold",
-      italics: "Times-Italic",
-      bolditalics: "Times-BoldItalic",
-    },
-    Symbol: {
-      normal: "Symbol",
-    },
-    ZapfDingbats: {
-      normal: "ZapfDingbats",
-    },
-  };
+const getPdf = async (data, callback) => {
+  const doc = new PDFDocument();
+  const directory = join(__dirname, `../pdfs/${data.name}.pdf`);
+  const imageDirectory = join(__dirname, `../images/download.jpg`);
+  doc.pipe(fs.createWriteStream(directory));
 
-  const printer = new pdfMakePrinter(fonts);
-  const doc = await printer.createPdfKitDocument(content);
-  return doc;
-};
+  doc.font("Helvetica").fontSize(25).text(
+    `Name: ${data.name}
+     Description: ${data.description}
+      Price: ${data.price}
+      Category: ${data.category}`,
+    100,
+    100
+  );
 
-const getImage = async (url, size) => {
-  return loadImage(url)
-    .then((image) => {
-      const canvas = createCanvas(size, size);
-      let ctx = canvas.getContext("2d");
-      ctx.drawImage(image, 0, 0);
-      return canvas.toDataURL();
-    })
-    .catch((e) => console.log(e));
+  doc.image(imageDirectory, {
+    fit: [250, 300],
+    align: "center",
+  });
+
+  callback(doc);
 };
 
 module.exports = {
@@ -101,6 +82,5 @@ module.exports = {
   updateData,
   removeData,
   buildXML,
-  generatePdf,
-  getImage,
+  getPdf,
 };

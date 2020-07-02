@@ -15,8 +15,7 @@ const {
   updateData,
   removeData,
   buildXML,
-  generatePdf,
-  getImage,
+  getPdf,
 } = require("../utilitties");
 const fileDirectory = path.join(__dirname, "products.json");
 
@@ -150,36 +149,16 @@ router
 router.route("/:id/exportToPDF").get(async (req, res, next) => {
   try {
     const { id } = req.params;
-    const imageData = await getImage(req.body.imageUrl, 10);
-    setTimeout(() => {
-      console.log(imageData);
-    }, 5000);
-    const docDefinition = {
-      content: [
-        // `Name: ${req.body.name}
-        //  Description: ${req.body.description}
-        //  Brand: ${req.body.brand}
-        //  Price: ${req.body.price}
-        //  Category: ${req.body.category}`,
-        {
-          image: "data:image/jpeg," + imageData,
-          width: 10,
-          height: 10,
-        },
-      ],
-      // defaultStyle: {
-      //   font: "Helvetica",
-      // },
-    };
 
-    const doc = await generatePdf(docDefinition);
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=${req.body.name}.pdf`
-    ); // please open "Save file to disk window" in browsers
+    const doc = await getPdf(req.body, (doc) => {
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${req.body.name}.pdf`
+      );
 
-    doc.pipe(res);
-    doc.end();
+      doc.pipe(res);
+      doc.end();
+    });
   } catch (e) {
     e.httpRequestStatusCode = 500;
     next(e);
