@@ -3,7 +3,7 @@ info:
   title: Strive Amazon
   version: 1.0.0
 servers:
-  - url: http://localhost:3002
+  - url: 'http://localhost:3002'
     description: Local server
 tags:
   - name: products
@@ -14,38 +14,37 @@ paths:
       tags:
         - products
       summary: Returns a list of products.
-
       responses:
-        "200": # status code
+        '200':
           description: A list of products
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Product"
-        "404":
-          $ref: "#/components/responses/NotFound"
+                  $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       tags:
         - products
       description: Adds a new product
       requestBody:
-        description:  object
+        description: object
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/Product'
       responses:
-        "201": # status code
+        '201':
           description: The ID of the newly created Product
           content:
             application/json:
               schema:
                 type: string
-        "404":
-          $ref: "#/components/responses/NotFound"
-  /products/{id}:
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/products/{id}':
     get:
       tags:
         - products
@@ -56,16 +55,15 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
-        "200": # status code
+        '200':
           description: single product
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
-        "404":
-          $ref: "#/components/responses/NotFound"
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
       tags:
         - products
@@ -82,18 +80,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Product"
+              $ref: '#/components/schemas/Product'
       responses:
-        "200": # status code
+        '200':
           description: A list of products
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Product"
-        "404":
-          $ref: "#/components/responses/NotFound"
+                  $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
       tags:
         - products
@@ -105,14 +103,37 @@ paths:
           schema:
             type: string
       responses:
-        "200": # status code
+        '200':
           description: The single Product
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
-        "404":
-          $ref: "#/components/responses/NotFound"
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /products/sum:
+    get:
+      tags:
+        - products
+      description: calculates sum od to products using xml data type
+      parameters:
+        -  in: query
+           name: id1
+           description: id of the first product to calculate sum
+           required: true
+           schema:
+             type: string
+        -  in: query
+           name: id2
+           description: id of the second product to calculate sum
+           required: true
+           schema:
+             type: string
+      responses:
+        '200':
+          description: returns a json object converted from xml
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   responses:
     NotFound:
@@ -120,13 +141,13 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     Unauthorized:
       description: Bearer token missing or invalid
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
   schemas:
     Product:
       type: object
