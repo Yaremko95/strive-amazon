@@ -1,5 +1,5 @@
 const express = require("express");
-
+const axios = require("axios");
 const path = require("path");
 const {
   check,
@@ -13,6 +13,7 @@ const {
   writeJSON,
   updateData,
   removeData,
+  buildXML,
 } = require("../utilitties");
 const fileDirectory = path.join(__dirname, "products.json");
 
@@ -76,7 +77,7 @@ router
       query("id2").exists().not().isEmpty().withMessage("Provide query"),
       sanitizeQuery("id2").toFloat(),
     ],
-    (request, response, next) => {
+    async (request, response, next) => {
       const errors = validationResult(request);
       if (!errors.isEmpty()) {
         return response.status(400).json({ errors: errors.array() });
@@ -84,9 +85,18 @@ router
       try {
         const { id1, id2 } = request.query;
         console.log(id1, id2);
-        response.send("ok");
+        const xml = buildXML(id1, id2);
+
+        const res = await axios({
+          method: "post",
+          url: "http://www.dneonline.com/calculator.asmx?op=Add",
+          data: xml,
+          headers: { "Content-type": "text/xml" },
+        });
+
+        response.send(res.data);
       } catch (e) {
-        response.send(e);
+        next(e);
       }
     }
   );
