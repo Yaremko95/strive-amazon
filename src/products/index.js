@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const { xml2js } = require("xml-js");
 const path = require("path");
 const {
   check,
@@ -93,8 +94,13 @@ router
           data: xml,
           headers: { "Content-type": "text/xml" },
         });
-
-        response.send(res.data);
+        const options = {
+          ignoreComment: true,
+          alwaysChildren: true,
+          compact: true,
+        };
+        const json = xml2js(res.data, options);
+        response.send(json);
       } catch (e) {
         next(e);
       }
