@@ -1,6 +1,8 @@
 const fs = require("fs-extra");
+const pdfMakePrinter = require("pdfmake/src/printer");
 const uniqid = require("uniqid");
 const { begin } = require("xmlbuilder");
+const { createCanvas, loadImage } = require("canvas");
 
 const readJSON = async (path) => {
   let json = await fs.readJson(path);
@@ -49,4 +51,56 @@ const buildXML = (value1, value2) => {
   return xml;
 };
 
-module.exports = { readJSON, writeJSON, updateData, removeData, buildXML };
+const generatePdf = async (content) => {
+  const fonts = {
+    Courier: {
+      normal: "Courier",
+      bold: "Courier-Bold",
+      italics: "Courier-Oblique",
+      bolditalics: "Courier-BoldOblique",
+    },
+    Helvetica: {
+      normal: "Helvetica",
+      bold: "Helvetica-Bold",
+      italics: "Helvetica-Oblique",
+      bolditalics: "Helvetica-BoldOblique",
+    },
+    Times: {
+      normal: "Times-Roman",
+      bold: "Times-Bold",
+      italics: "Times-Italic",
+      bolditalics: "Times-BoldItalic",
+    },
+    Symbol: {
+      normal: "Symbol",
+    },
+    ZapfDingbats: {
+      normal: "ZapfDingbats",
+    },
+  };
+
+  const printer = new pdfMakePrinter(fonts);
+  const doc = await printer.createPdfKitDocument(content);
+  return doc;
+};
+
+const getImage = async (url, size) => {
+  return loadImage(url)
+    .then((image) => {
+      const canvas = createCanvas(size, size);
+      let ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0);
+      return canvas.toDataURL();
+    })
+    .catch((e) => console.log(e));
+};
+
+module.exports = {
+  readJSON,
+  writeJSON,
+  updateData,
+  removeData,
+  buildXML,
+  generatePdf,
+  getImage,
+};
