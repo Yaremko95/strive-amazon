@@ -25,7 +25,14 @@ router
       const products = await ProductModel.find(criteria)
         .skip(10 * page)
         .limit(10);
-      response.status(200).send(products);
+      const numOfProducts = await ProductModel.count(criteria);
+
+      response.status(200).send({
+        data: products,
+        currentPage: page,
+        pages: Math.ceil(numOfProducts / 10),
+        results: numOfProducts,
+      });
     } catch (e) {
       e.httpRequestStatusCode = 404;
       next(e);

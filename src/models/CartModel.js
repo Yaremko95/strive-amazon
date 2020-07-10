@@ -19,5 +19,6 @@ CartSchema.static("existsInCart", async function (prodId) {
   }
   return null;
 });
+
 const CartModel = mongoose.model("Cart", CartSchema);
 module.exports = CartModel;

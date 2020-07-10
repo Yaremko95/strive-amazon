@@ -7,7 +7,7 @@ router.route("/").get(async (req, res, next) => {
   try {
     console.log("ok");
     const prodInCart = await CartModel.find().populate("productId");
-    res.status(200).send(prodInCart);
+    res.status(200).send({ data: prodInCart });
   } catch (e) {
     console.log(e);
     e.httpRequestStatusCode = 500;
@@ -52,11 +52,13 @@ router
 router.route("/:prodId/decrement-qty").post(async (req, res, next) => {
   try {
     const prodExists = await CartModel.existsInCart(req.params.prodId);
-    await CartModel.findByIdAndUpdate(prodExists._id, {
-      $inc: {
-        quantity: -1,
-      },
-    });
+    if (prodExists.quantity > 1) {
+      await CartModel.findByIdAndUpdate(prodExists._id, {
+        $inc: {
+          quantity: -1,
+        },
+      });
+    }
 
     res.status(200).send("ok");
   } catch (e) {
