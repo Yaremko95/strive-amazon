@@ -1,5 +1,7 @@
 const express = require("express");
 const axios = require("axios");
+const ProductModel = require("../models/ProductModel");
+const multer = require("multer");
 const { xml2js } = require("xml-js");
 const path = require("path");
 const {
@@ -18,7 +20,8 @@ const {
   getPdf,
 } = require("../utilitties");
 const fileDirectory = path.join(__dirname, "products.json");
-
+const imageFolderPath = path.join(__dirname, "../images");
+const upload = multer({});
 const validateBody = () => {
   return [
     check("name")
@@ -48,88 +51,80 @@ router
   .route("/")
   .get(async (request, response, next) => {
     try {
-      const json = await readJSON(fileDirectory);
-      response.send(json);
+      const products = await ProductModel.find();
+      response.status(200).send(products);
     } catch (e) {
       e.httpRequestStatusCode = 404;
       next(e);
     }
   })
-  .post(validateBody(), async (request, response, next) => {
+  .post(async (request, response, next) => {
     try {
-      const errors = validationResult(request);
-      if (!errors.isEmpty()) {
-        return response.status(400).json({ errors: errors.array() });
-      }
-      let data = await writeJSON(fileDirectory, request.body);
-      console.log(data);
-      response.send(data);
+      const res = await new ProductModel(request.body);
+      const { _id } = res.save();
+      response.send(_id);
     } catch (e) {
+      console.log(e);
       e.httpRequestStatusCode = 500;
       next(e);
     }
   });
 
-router
-  .route("/sum")
-  .get(
-    [
-      query("id1").exists().not().isEmpty().withMessage("Provide query"),
-      sanitizeQuery("id1").toFloat(),
-      query("id2").exists().not().isEmpty().withMessage("Provide query"),
-      sanitizeQuery("id2").toFloat(),
-    ],
-    async (request, response, next) => {
-      const errors = validationResult(request);
-      if (!errors.isEmpty()) {
-        return response.status(400).json({ errors: errors.array() });
-      }
-      try {
-        const { id1, id2 } = request.query;
-        console.log(id1, id2);
-        const xml = buildXML(id1, id2);
-
-        const res = await axios({
-          method: "post",
-          url: "http://www.dneonline.com/calculator.asmx?op=Add",
-          data: xml,
-          headers: { "Content-type": "text/xml" },
-        });
-        const options = {
-          ignoreComment: true,
-          alwaysChildren: true,
-          compact: true,
-        };
-        const json = xml2js(res.data, options);
-        response.send(json);
-      } catch (e) {
-        next(e);
-      }
-    }
-  );
+// router
+//   .route("/sum")
+//   .get(
+//     [
+//       query("id1").exists().not().isEmpty().withMessage("Provide query"),
+//       sanitizeQuery("id1").toFloat(),
+//       query("id2").exists().not().isEmpty().withMessage("Provide query"),
+//       sanitizeQuery("id2").toFloat(),
+//     ],
+//     async (request, response, next) => {
+//       const errors = validationResult(request);
+//       if (!errors.isEmpty()) {
+//         return response.status(400).json({ errors: errors.array() });
+//       }
+//       try {
+//         const { id1, id2 } = request.query;
+//         console.log(id1, id2);
+//         const xml = buildXML(id1, id2);
+//
+//         const res = await axios({
+//           method: "post",
+//           url: "http://www.dneonline.com/calculator.asmx?op=Add",
+//           data: xml,
+//           headers: { "Content-type": "text/xml" },
+//         });
+//         const options = {
+//           ignoreComment: true,
+//           alwaysChildren: true,
+//           compact: true,
+//         };
+//         const json = xml2js(res.data, options);
+//         response.send(json);
+//       } catch (e) {
+//         next(e);
+//       }
+//     }
+//   );
 
 router
   .route("/:id")
   .get(async (request, response, next) => {
     try {
       const { id } = request.params;
-      const dataArray = await readJSON(fileDirectory);
-      const item = dataArray.filter((item) => item._id === id);
-      response.send(item);
+      const product = await ProductModel.findById(id);
+      response.status(200).send(product);
     } catch (e) {
       e.httpRequestStatusCode = 500;
       next(e);
     }
   })
-  .put(validateBody(), async (request, response, next) => {
+  .put(async (request, response, next) => {
     try {
-      const errors = validationResult(request);
-      if (!errors.isEmpty()) {
-        return response.status(400).json({ errors: errors.array() });
-      }
       const { id } = request.params;
-      const updatedData = await updateData(fileDirectory, id, request.body);
-      response.send(updatedData);
+      const res = await ProductModel.findByIdAndUpdate(id, request.body);
+      response.status(200).send("ok");
     } catch (e) {
       e.httpRequestStatusCode = 500;
       next(e);
@@ -138,31 +133,39 @@ router
   .delete(async (request, response, next) => {
     try {
       const { id } = request.params;
-      const updatedData = await removeData(fileDirectory, "_id", id);
-      response.send(updatedData);
+      const res = await ProductModel.findByIdAndDelete(id);
+      response.status(200).send("ok");
     } catch (e) {
       e.httpRequestStatusCode = 500;
       next(e);
     }
   });
 
-router.route("/:id/exportToPDF").get(async (req, res, next) => {
-  try {
-    const { id } = req.params;
+// router.route("/:id/exportToPDF").get(async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+//
+//     const doc = await getPdf(req.body, (doc) => {
+//       res.setHeader(
+//         "Content-Disposition",
+//         `attachment; filename=${req.body.name}.pdf`
+//       );
+//       doc.pipe(res);
+//       doc.end();
+//     });
+//   } catch (e) {
+//     e.httpRequestStatusCode = 500;
+//     next(e);
+//   }
+// });
 
-    const doc = await getPdf(req.body, (doc) => {
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=${req.body.name}.pdf`
-      );
-
-      doc.pipe(res);
-      doc.end();
-    });
-  } catch (e) {
-    e.httpRequestStatusCode = 500;
-    next(e);
-  }
-});
+router
+  .route("/:id/upload")
+  .post(upload.single("avatar"), async (req, res, next) => {
+    try {
+      join(studentsFolderPath, req.file.originalname), req.file.buffer;
+      res.send("ok");
+    } catch (e) {}
+  });
 
 module.exports = router;

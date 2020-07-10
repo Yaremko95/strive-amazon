@@ -1,5 +1,6 @@
 const express = require("express");
 const productRoutes = require("./products");
+const mongoose = require("mongoose");
 const { join } = require("path");
 const reviewsRoutes = require("./reviews");
 const listEndpoints = require("express-list-endpoints");
@@ -29,6 +30,14 @@ app.use((error, request, response, next) => {
 });
 console.log(listEndpoints(app));
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+
+mongoose
+  .connect("mongodb://localhost:27017/strivamazon", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    })
+  );

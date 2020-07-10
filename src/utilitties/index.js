@@ -72,7 +72,6 @@ const getPdf = async (data, callback) => {
     fit: [250, 300],
     align: "center",
   });
-
   callback(doc);
 };
 
