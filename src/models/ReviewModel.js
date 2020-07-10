@@ -14,8 +14,8 @@ const ReviewSchema = new Schema(
       min: 0,
     },
     productId: {
-      type: Schema.Types.ObjectId,
-      ref: "Product",
+      type: String,
+      required: true,
     },
   },
   {
@@ -23,5 +23,9 @@ const ReviewSchema = new Schema(
   }
 );
 
+ReviewSchema.static("getReviewsByProductID", async function (id) {
+  const reviews = await ReviewModel.find(id);
+  return reviews;
+});
 const ReviewModel = mongoose.model("Review", ReviewSchema);
 module.exports = ReviewModel;

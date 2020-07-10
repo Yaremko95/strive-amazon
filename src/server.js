@@ -1,5 +1,6 @@
 const express = require("express");
 const productRoutes = require("./products");
+const cartRoutes = require("./cart");
 const mongoose = require("mongoose");
 const { join } = require("path");
 const reviewsRoutes = require("./reviews");
@@ -18,6 +19,7 @@ const swaggerDocument = YAML.load(join(__dirname, "./apiDocumentation.yml"));
 
 app.use("/products", productRoutes);
 app.use("/reviews", reviewsRoutes);
+app.use("/cart", cartRoutes);
 
 app.use((error, request, response, next) => {
   if (error.httpRequestStatusCode === 404) {
