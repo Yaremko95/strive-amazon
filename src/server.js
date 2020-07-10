@@ -17,7 +17,7 @@ const port = process.env.PORT || 3002;
 const swaggerDocument = YAML.load(join(__dirname, "./apiDocumentation.yml"));
 
 app.use("/products", productRoutes);
-// app.use('reviews', reviewsRoutes)
+app.use("/reviews", reviewsRoutes);
 
 app.use((error, request, response, next) => {
   if (error.httpRequestStatusCode === 404) {
