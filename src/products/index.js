@@ -3,10 +3,13 @@ const q2m = require("query-to-mongo");
 const ProductModel = require("../models/ProductModel");
 const ReviewModel = require("../models/ReviewModel");
 const CartModel = require("../models/CartModel");
+const { writeFile } = require("fs-extra");
 const multer = require("multer");
-const upload = multer();
+const upload = multer({});
 const router = express.Router();
+const { join } = require("path");
 
+const imageFolderPath = join(__dirname, "../images/");
 router
   .route("/")
   .get(async (request, response, next) => {
@@ -133,8 +136,11 @@ router
   .route("/:id/upload")
   .post(upload.single("avatar"), async (req, res, next) => {
     try {
-      join(studentsFolderPath, req.file.originalname), req.file.buffer;
-      res.send("ok");
+      await writeFile(
+        join(imageFolderPath, req.file.originalname),
+        req.file.buffer
+      );
+      res.s(200).send("ok");
     } catch (e) {}
   });
 
