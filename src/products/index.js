@@ -1,5 +1,6 @@
 const express = require("express");
 const q2m = require("query-to-mongo");
+const queryString = require("query-string");
 const ProductModel = require("../models/ProductModel");
 const ReviewModel = require("../models/ReviewModel");
 const CartModel = require("../models/CartModel");
@@ -19,9 +20,13 @@ router
       delete query.page;
       const queryToMongo = q2m(query);
       const criteria = queryToMongo.criteria;
+
       for (let key in criteria) {
-        criteria[key] = { $regex: `${criteria[key]}`, $options: "i" };
+        if (typeof criteria[key] !== "object") {
+          criteria[key] = { $regex: `${criteria[key]}`, $options: "i" };
+        }
       }
+      console.log(criteria);
       const products = await ProductModel.find(criteria)
         .skip(10 * page)
         .limit(10);
@@ -40,7 +45,10 @@ router
   })
   .post(async (request, response, next) => {
     try {
-      const res = await new ProductModel(request.body);
+      const res = await new ProductModel({
+        ...request.body,
+        price: parseInt(request.body.price),
+      });
       const { _id } = await res.save();
       response.send(_id);
     } catch (e) {
@@ -103,6 +111,7 @@ router
   .put(async (request, response, next) => {
     try {
       const { id } = request.params;
+      console.log(request.body);
       const res = await ProductModel.findByIdAndUpdate(id, request.body);
       response.status(200).send("ok");
     } catch (e) {
